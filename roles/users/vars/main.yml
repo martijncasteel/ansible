@@ -1,0 +1,9 @@
+---
+
+users:
+  - user: martijn
+    comment: Martijn Casteel
+    groups: sudo
+    authorized_keys: https://github.com/martijncasteel.keys
+
+

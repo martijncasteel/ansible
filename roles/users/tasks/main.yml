@@ -1,0 +1,26 @@
+---
+# This playbook will add users and disable password login
+
+- name: create users
+  become: yes
+  
+  ansible.builtin.user:
+    name: '{{ item.user }}'
+    groups: '{{ item.groups }}'
+    comment: '{{ item.comment }}'
+
+    shell: /bin/bash
+    state: present
+    append: yes
+  with_items: '{{ users }}'
+
+- name: add authorized keys
+  become: yes
+  
+  ansible.posix.authorized_key:
+    user: '{{ item.user }}'
+    state: present
+
+    key: '{{ item.authorized_keys }}'
+  with_items: '{{ users }}'
+  
