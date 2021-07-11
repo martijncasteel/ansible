@@ -1,0 +1,39 @@
+---
+# aptitude update and upgrade, reboot if required
+
+- name: ansible.builtin.apt update
+  become: yes
+
+  ansible.builtin.apt: 
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: ansible.builtin.apt dist-upgrade
+  become: yes
+
+  ansible.builtin.apt: 
+    upgrade: dist
+
+- name: ansible.builtin.apt upgrade
+  become: yes
+
+  apt:
+    name: "*"
+    state: latest
+
+- name: check /var/run/reboot-required
+  register: reboot_required
+  stat: path=/var/run/reboot-required get_md5=no
+
+- name: notify reboot if required
+  debug: msg="notify reboot if required"
+  notify: reboot
+  when: reboot_required.stat.exists
+
+- name: ansible.builtin.apt autoremove
+  become: yes
+
+  ansible.builtin.apt:
+    autoremove: yes
+
+    

@@ -1,0 +1,21 @@
+---
+# some common commands used after a clean install
+# TODO check if commands can be skipped if already set correctly
+
+- name: raspi-config do_change_locale
+  become: yes
+  command: raspi-config nonint do_change_locale en_US.UTF-8
+
+- name: raspi-config do_configure_keyboard
+  become: yes
+  command: raspi-config nonint do_configure_keyboard us
+
+- name: ansible.builtin.copy /etc/timezone 
+  # TODO check out command: timedatectl set-timezone 
+  # or community.general.timezone:
+  become: yes
+  ansible.builtin.copy: 
+    content: Europe/Amsterdam
+    dest: /etc/timezone
+
+  notify: update tzdata

@@ -1,20 +1,39 @@
 ---
 # This playbook will add users and disable password login
 
-- name: create users
+- name: ansible.builtin.lineinfile /etc/skel/.bashrc
+  become: yes
+
+  ansible.builtin.lineinfile:
+    path: /etc/skel/.bashrc
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    state: present
+
+  with_items: 
+    - regexp: "^#?alias ll"
+      line: "alias ll='ls -al'"
+
+  tags: initial-setup
+
+- 
   become: yes
   
   ansible.builtin.user:
     name: '{{ item.user }}'
-    groups: '{{ item.groups }}'
     comment: '{{ item.comment }}'
+    password: '{{ item.password }}'
+
+    groups: '{{ item.groups }}'
+    append: yes
 
     shell: /bin/bash
     state: present
-    append: yes
+
+  tags: initial-setup
   with_items: '{{ users }}'
 
-- name: add authorized keys
+- 
   become: yes
   
   ansible.posix.authorized_key:
@@ -22,5 +41,47 @@
     state: present
 
     key: '{{ item.authorized_keys }}'
+
+  tags: initial-setup
   with_items: '{{ users }}'
   
+- name: ansible.builtin.lineinfile /etc/sudoers
+  become: yes
+  
+  ansible.builtin.lineinfile:
+    path: /etc/sudoers
+    regexp: '^%SUDO ALL='
+    line: '%sudo  ALL=(ALL:ALL) NOPASSWD: ALL'
+    state: present
+
+    validate: '/usr/sbin/visudo -cf %s'
+
+  tags: initial-setup
+
+- name: ansible.builtin.lineinfile /etc/ssh/sshd_config
+  become: yes
+
+  ansible.builtin.lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    state: present
+
+  with_items:
+    - regexp: "^#?PermitRootLogin"
+      line: "PermitRootLogin no"
+    - regexp: "^#?StrictModes"
+      line: "StrictModes yes"
+    - regexp: "^#?X11Forwarding"
+      line: "X11Forwarding no"
+    - regexp: "^#?PasswordAuthentication"
+      line: "PasswordAuthentication no"
+    - regexp: "^#?ChallengeResponseAuthentication"
+      line: "ChallengeResponseAuthentication no"
+    - regexp: "^#?UsePAM"
+      line: "UsePAM no"
+
+  notify:
+    - restart sshd
+
+

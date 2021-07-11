@@ -1,0 +1,12 @@
+---
+
+- name: reboot
+  become: yes
+
+  ansible.builtin.reboot:
+    msg: "ansible triggered reboot"
+    test_command: uptime
+
+- name: update tzdata
+  become: true
+  command: dpkg-reconfigure --frontend noninteractive tzdata
