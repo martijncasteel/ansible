@@ -17,9 +17,17 @@
 - name: ansible.builtin.apt upgrade
   become: yes
 
-  apt:
+  ansible.builtin.apt:
     name: "*"
     state: latest
+
+- name: ansible.builtin.apt install
+  become: yes
+  
+  ansible.builtin.apt:
+    name: '{{ packages }}'
+    state: present
+
 
 - name: check /var/run/reboot-required
   register: reboot_required
@@ -30,10 +38,9 @@
   notify: reboot
   when: reboot_required.stat.exists
 
+
 - name: ansible.builtin.apt autoremove
   become: yes
 
   ansible.builtin.apt:
     autoremove: yes
-
-    

@@ -1,0 +1,8 @@
+---
+packages: 
+  - git
+
+repositories: 
+  - repo: https://github.com/martijncasteel/frame.git
+    dest: ~/frame
+

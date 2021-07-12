@@ -1,0 +1,9 @@
+---
+
+- name: ansible.builtin.git 
+  ansible.builtin.git:
+    repo: '{{ item.repo }}'
+    dest: '{{ item.dest }}'
+    accept_hostkey: yes
+
+  with_items: '{{ repositories }}'

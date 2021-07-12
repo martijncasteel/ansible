@@ -1,11 +1,7 @@
 ---
 - hosts: all
-  # ignore_unreachable: yes
 
   roles:
     - users
     - common
-
-
-
-    # different playbook for applications?
+    - apps
