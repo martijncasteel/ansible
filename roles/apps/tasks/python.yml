@@ -1,0 +1,41 @@
+---
+
+- name: ansible.builtin.apt install python3-venv
+  become: yes
+  
+  ansible.builtin.apt:
+    name: python3-venv
+    state: present
+
+- name: ansible.builtin.pip
+  ansible.builtin.pip: 
+    requirements: '{{ item.dest }}/requirements.txt'
+
+    virtualenv_command: python3 -m venv
+    virtualenv: '{{ item.dest }}/env'
+
+# perhaps move to different tasks file with own host_vars
+- name: 'ansible.builtin.copy {{ item.systemd }}'
+  become: yes
+
+  # TODO fix become does not work with ~
+  ansible.builtin.copy: 
+    src: '/home/martijn/frame/{{ item.systemd }}'
+    dest: '/etc/systemd/system/{{ item.systemd }}'
+    remote_src: yes
+
+  when: item.systemd is defined
+
+- name: 'ansible.builtin.systemd enable {{ item.systemd }}'
+  become: yes
+
+  ansible.builtin.systemd:
+    name: '{{ item.systemd }}'
+
+    daemon_reload: yes
+    enabled: yes
+    masked: no
+
+    state: started
+  
+  when: item.systemd is defined

@@ -7,3 +7,10 @@
     accept_hostkey: yes
 
   with_items: '{{ repositories }}'
+
+- name: ansible.builtin.include_tasks python.yml
+  ansible.builtin.include_tasks: python.yml
+  with_items: '{{ repositories }}'
+  when:
+    - item.type is defined 
+    - item.type == 'python'

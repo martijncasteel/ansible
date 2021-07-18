@@ -2,7 +2,10 @@
 packages: 
   - git
 
-repositories: 
+repositories:
   - repo: https://github.com/martijncasteel/frame.git
     dest: ~/frame
+    type: python
+
+    systemd: frame.service
 
