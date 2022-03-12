@@ -6,4 +6,4 @@
     dest: '{{ item.dest }}'
     accept_hostkey: yes
 
-  with_items: '{{ repositories }}'
+  with_items: '{{ repositories | default([]) }}'

@@ -25,9 +25,8 @@
   become: yes
   
   ansible.builtin.apt:
-    name: '{{ packages }}'
+    name: '{{ packages | default([]) }}'
     state: present
-
 
 - name: check /var/run/reboot-required
   register: reboot_required

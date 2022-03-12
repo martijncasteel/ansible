@@ -13,8 +13,11 @@ The first part is creating users, this has to be done by the default user. So th
 After adding your own user, the rest of the playbook can be executed.
 
 ```shell
+# copy your ssh key to the pi user
+ssh-copy-id pi@raspberrypi.local
+
 # run first bit with default pi user
-ansible-playbook main.yml --tags='initial-setup' -u pi --ask-pass
+ansible-playbook main.yml --tags='initial-setup' -u pi
 
 # run entire playbook as your own
 ansible-playbook main.yml
