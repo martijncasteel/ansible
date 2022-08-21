@@ -1,0 +1,6 @@
+---
+
+- name: postfix reload
+  become: yes
+  
+  shell: postfix reload

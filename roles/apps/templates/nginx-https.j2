@@ -1,0 +1,62 @@
+server {
+  listen 80;
+  listen [::]:80;
+
+  server_name {{ config.domains | join(' ') }};
+  root {{ config.root }};
+
+  location /.well-known/acme-challenge/ {
+    default_type "text/plain";
+    try_files $uri =404;
+    break;
+  }
+
+  return 301 https://{{ config.domains | first }}$request_uri;
+}
+
+server {
+  listen 443 ssl http2;
+  listen [::]:443 ssl http2;
+
+  server_name {{ config.domains | first }};
+  root {{ config.root }};
+
+  gzip_vary on;
+  gzip_proxied any;
+  gzip_comp_level 6;
+  gzip_buffers 16 8k;
+  gzip_http_version 1.1;
+  gzip_types text/plain text/css application/json application/javascript application/x-javascript text/xml application/xml application/xml+rss text/javascript application/vnd.ms-fontobject application/x-font-ttf font/opentype image/svg+xml image/x-icon;
+
+  ssl_certificate /etc/letsencrypt/live/{{ config.domains | first }}/fullchain.pem;
+  ssl_certificate_key /etc/letsencrypt/live/{{ config.domains | first }}/privkey.pem;
+  ssl_trusted_certificate /etc/letsencrypt/live/{{ config.domains | first }}/chain.pem;
+
+  add_header Strict-Transport-Security "max-age=31536000; preload";
+  add_header Cache-Control "public";
+
+  add_header X-Frame-Options SAMEORIGIN;
+  add_header X-Content-Type-Options nosniff;
+  add_header X-XSS-Protection "1; mode=block";
+{% if csp is defined %}
+  add_header Content-Security-Policy "{{ config.csp }}";
+{% endif %}
+
+  location ~* \.(?:rss|atom|html)$ {
+    expires 1h;
+  }
+
+  location ~* \.(?:jpg|jpeg|gif|png|ico|svg|mp4|webm)$ {
+    expires 1M;
+    access_log off;
+  }
+
+  location ~* \.(?:css|js)$ {
+    expires 1y;
+    access_log off;
+  }
+
+  location / {
+    try_files $uri $uri/ =404;
+  }
+}

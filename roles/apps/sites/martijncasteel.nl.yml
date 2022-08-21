@@ -1,0 +1,38 @@
+---
+
+- name: ansible.builtin.git
+  ansible.builtin.git:
+    repo: git@github.com:martijncasteel/marked-paper.git
+    dest: /var/www/martijncasteel.nl
+
+# TODO build stuff if required
+-
+  ansible.builtin.file:
+    path: /var/www/martijncasteel.nl/build
+    state: directory
+
+- name: ansible.builtin.set_fact
+  ansible.builtin.set_fact:
+    config:
+      domains: 
+        - martijncasteel.nl 
+        - www.martijncasteel.nl 
+        - martijncasteel.com 
+        - www.martijncasteel.com
+
+      root: /var/www/martijncasteel.nl/build
+
+      csp: >- 
+        default-src 'none'; 
+        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; 
+        img-src 'self'; 
+        font-src 'self' https://fonts.gstatic.com data:; 
+        script-src 'self' https://code.jquery.com https://www.google-analytics.com; 
+        media-src 'self'; 
+        connect-src 'self' https://api.martijncasteel.com wss://api.martijncasteel.com;
+
+      ssl:
+        email: info@martijncasteel.nl
+      
+
+- include_tasks: ../tasks/host.yml

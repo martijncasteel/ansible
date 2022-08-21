@@ -13,8 +13,10 @@
   with_items: 
     - regexp: "^#?alias ll"
       line: "alias ll='ls -al'"
-
-  tags: initial-setup
+    - regexp: "^export MAIL"
+      line: 'export MAIL="$HOME/mail"'
+    - regexp: "^export MBOX"
+      line: 'export MBOX="$HOME/mail"'
 
 - 
   become: yes
@@ -22,7 +24,9 @@
   ansible.builtin.user:
     name: '{{ item.user }}'
     comment: '{{ item.comment }}'
-    password: '{{ item.password }}'
+
+    password: '{{ item.password | password_hash("sha512") }}'
+    update_password: on_create
 
     groups: '{{ item.groups }}'
     append: yes
@@ -30,8 +34,20 @@
     shell: /bin/bash
     state: present
 
-  tags: initial-setup
   with_items: '{{ users }}'
+
+- become: yes
+
+  ansible.builtin.copy:
+    content: | 
+      address {
+        # email-addr <email: address>;
+        email-addr {{ item.email }};
+      }
+    dest: /home/{{ item.user }}/.mail
+
+  with_items: '{{ users }}'
+  when: item.email is defined
 
 - 
   become: yes
@@ -42,8 +58,8 @@
 
     key: '{{ item.authorized_keys }}'
 
-  tags: initial-setup
   with_items: '{{ users }}'
+  when: item.authorized_keys is defined
   
 - name: ansible.builtin.lineinfile /etc/sudoers
   become: yes
@@ -55,8 +71,6 @@
     state: present
 
     validate: '/usr/sbin/visudo -cf %s'
-
-  tags: initial-setup
 
 - name: ansible.builtin.lineinfile /etc/ssh/sshd_config
   become: yes
@@ -84,4 +98,57 @@
   notify:
     - restart sshd
 
+# add private key for github
 
+-
+  ansible.builtin.file: 
+    dest: ~/.ssh
+    state: directory
+
+    mode: 0700 
+    owner: martijn
+
+  with_items: '{{ users }}'
+  when: item.private_key is defined
+
+- name: ansible.builtin.copy ~/.ssh/id_rsa
+  ansible.builtin.copy: 
+    content: "{{ lookup('file', item.key.private) }}\n"
+    dest: ~/.ssh/id_rsa
+
+    mode: 0600
+    owner: martijn
+
+  with_items: '{{ users }}'
+  when: item.key.private is defined
+
+- name: ansible.builtin.copy ~/.ssh/id_rsa.pub
+  ansible.builtin.copy: 
+    content: "{{ lookup('file', item.key.public) }}\n"
+    dest: ~/.ssh/id_rsa.pub
+
+    remote_src: yes
+    mode: 0600
+    owner: martijn
+
+  with_items: '{{ users }}'
+  when: item.key.public is defined
+
+- name: accept hostkey git@github.com # TODO always changed..
+  ansible.builtin.git:
+    repo: git@github.com:martijncasteel/marked-paper.git
+    clone: no
+    accept_hostkey: yes
+
+- 
+  ansible.builtin.copy:
+    content: | 
+      [user]
+        signingkey = AABC3B94627A27FD
+        email = martijn.casteel@gmail.com
+        name = Martijn Casteel
+      [commit]
+        gpgsign = true
+      [safe]
+    dest: /home/martijn/.gitconfig
+    force: no

@@ -1,0 +1,82 @@
+---
+
+- name: ansible.builtin.apt install
+  become: yes
+  
+  ansible.builtin.apt:
+    pkg: 
+      - postfix
+      - mailutils
+      - postfix-policyd-spf-python
+      
+  notify: postfix reload
+
+- 
+  become: yes
+
+  ansible.builtin.copy:
+    dest: /etc/mailname
+    content: mail.martijncasteel.nl
+
+  notify: postfix reload
+
+- 
+  become: yes
+
+  ansible.builtin.copy:
+    src: aliases
+    dest: /etc/aliases
+
+  notify: postfix reload
+
+- 
+  become: yes
+  ansible.builtin.shell: newaliases
+  notify: postfix reload
+
+- 
+  become: yes
+
+  ansible.builtin.copy:
+    src: '{{ item.src }}'
+    dest: '{{ item.dest }}'
+
+  with_items:
+    - src: main.cf
+      dest: /etc/postfix/main.cf
+    - src: virtual
+      dest: /etc/postfix/virtual
+    - src: whitelist
+      dest: /etc/postfix/whitelist
+
+  notify: postfix reload
+
+- 
+  become: yes
+
+  ansible.builtin.shell: postmap {{ item }}
+  with_items:
+    - /etc/postfix/virtual
+    - /etc/postfix/whitelist
+  notify: postfix reload
+
+-
+  become: yes
+
+  ansible.builtin.blockinfile:
+    path: /etc/postfix/master.cf
+    insertafter: EOF
+    block: | 
+      policyd-spf  unix  -       n       n       -       0       spawn
+        user=policyd-spf argv=/usr/bin/policyd-spf
+
+  notify: postfix reload
+
+- name: community.general.ufw
+  become: yes
+
+  community.general.ufw:
+    rule: allow
+    name: Postfix
+
+  notify: postfix reload
