@@ -3,6 +3,12 @@
 
 - include_tasks: apt.yml
 
+- 
+  become: yes
+  
+  community.general.timezone:
+    name: Europe/Amsterdam
+
 - name: community.general.ufw
   become: yes
 
