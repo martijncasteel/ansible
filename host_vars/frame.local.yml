@@ -2,7 +2,11 @@
 packages: 
   - git
 
-repositories: 
+repositories:
   - repo: https://github.com/martijncasteel/frame.git
-    dest: ~/frame
+    dest: /home/martijn/frame
+    
+    type: python
+    systemd: frame.service
+    exec: /home/martijn/frame/env/bin/python3 -m frame /home/martijn/images
 

@@ -1,0 +1,16 @@
+[Unit]
+Description={{ item.systemd }}
+After=multi-user.target
+
+StartLimitIntervalSec=400
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=10
+
+WorkingDirectory={{ item.dest }}
+ExecStart={{ item.exec }}
+
+[Install]
+WantedBy=multi-user.target
