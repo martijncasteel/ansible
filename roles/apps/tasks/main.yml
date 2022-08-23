@@ -54,10 +54,11 @@
   become: yes
   ansible.builtin.cron:
     name: certbot renew --quiet
-    job: certbot renew --quiet
+    job: certbot renew --quiet && nginx -s reload
     
     weekday: 1
     hour: 2
+    minute: 43
 
 - include_tasks: ../sites/martijncasteel.nl.yml
 - include_tasks: ../sites/ambernorder.nl.yml
