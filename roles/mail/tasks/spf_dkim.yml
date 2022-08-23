@@ -1,0 +1,150 @@
+--- 
+
+# https://www.linuxbabe.com/mail-server/setting-up-dkim-and-spf
+# https://serverfault.com/questions/785151/dkim-with-same-key-but-different-domains#:~:text=You%20can%20use%20the%20same,be%20published%20under%20different%20domains.
+
+-
+  become: yes
+
+  ansible.builtin.blockinfile:
+    path: /etc/postfix/master.cf
+    insertafter: EOF
+    block: | 
+      policyd-spf  unix  -       n       n       -       0       spawn
+        user=policyd-spf argv=/usr/bin/policyd-spf
+
+  notify: postfix reload
+
+# install and setup config files for dkim
+- name: ansible.builtin.apt install
+  become: yes
+  
+  ansible.builtin.apt:
+    pkg:
+      - opendkim
+      - opendkim-tools
+      
+-
+  become: yes
+
+  ansible.builtin.user:
+    name: postfix
+    groups: opendkim
+    append: yes
+    
+- 
+  become: yes
+
+  ansible.builtin.copy:
+    src: opendkim/opendkim.conf
+    dest: /etc/opendkim.conf
+  notify: restart opendkim
+
+
+# create directory for keys
+- 
+  become: yes
+
+  ansible.builtin.file:
+    path: /etc/opendkim
+    state: directory
+
+    owner: opendkim
+    group: opendkim
+
+- 
+  become: yes
+
+  ansible.builtin.file:
+    path: /etc/opendkim/keys
+    state: directory
+
+    mode: go-rw
+    owner: opendkim
+    group: opendkim
+
+- 
+  become: yes
+
+  ansible.builtin.copy:
+    src: '{{ item.src }}'
+    dest: '{{ item.dest }}'
+
+  with_items:
+    - src: opendkim/signing.table
+      dest: /etc/opendkim/signing.table
+    - src: opendkim/key.table
+      dest: /etc/opendkim/key.table
+    - src: opendkim/trusted.hosts
+      dest: /etc/opendkim/trusted.hosts
+  notify: restart opendkim
+
+- 
+  become: yes
+
+  ansible.builtin.file:
+    path: /etc/opendkim/keys/martijncasteel.nl
+    state: directory
+
+# create a dkim key pair
+-
+  become: yes
+
+  ansible.builtin.shell:
+    cmd: opendkim-genkey -b 2048 -d martijncasteel.nl -D /etc/opendkim/keys/martijncasteel.nl -s default
+    creates: /etc/opendkim/keys/martijncasteel.nl/default.private
+  notify: restart opendkim
+
+- 
+  become: yes
+  ansible.builtin.file:
+    path: /etc/opendkim/keys/martijncasteel.nl/default.private
+    owner: opendkim
+    group: opendkim
+    mode: '0600'
+
+- 
+  become: yes
+  
+  ansible.builtin.file:
+    path: /etc/opendkim/keys/martijncasteel.nl/default.txt
+    owner: opendkim
+    group: opendkim
+    mode: '0644'
+
+- 
+  become: yes
+
+  ansible.builtin.shell:
+    cmd: cat /etc/opendkim/keys/martijncasteel.nl/default.txt
+  register: public_key
+
+- name: opendkim public key
+  debug:
+    msg: "{{public_key.stdout}}"
+
+# To test if your key is accepted and corrently configured in dns
+# sudo opendkim-testkey -d martijncasteel.nl -s default -vvv
+
+# connect postfix to dkim
+- 
+  become: yes
+
+  ansible.builtin.file:
+    path: /var/spool/postfix/opendkim
+    state: directory
+
+    mode: go-rw
+    owner: opendkim
+    group: postfix
+
+-
+  become: yes
+
+  ansible.builtin.lineinfile:
+    path: /etc/default/opendkim
+    regexp:  "^SOCKET=\"?local"
+    line: 'SOCKET="local:/var/spool/postfix/opendkim/opendkim.sock"'
+  notify: 
+    - restart opendkim
+    - restart postfix

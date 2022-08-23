@@ -111,3 +111,8 @@ smtpd_helo_restrictions =
   reject_non_fqdn_helo_hostname, 
   reject_unknown_helo_hostname
 
+# Milter configuration
+milter_default_action = accept
+milter_protocol = 6
+smtpd_milters = local:opendkim/opendkim.sock
+non_smtpd_milters = $smtpd_milters

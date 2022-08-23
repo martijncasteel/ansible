@@ -1,4 +1,5 @@
 {
   "yaml.validate": false,
-  "yaml.schemaStore.enable": false
+  "yaml.schemaStore.enable": false,
+  "editor.tabSize": 4
 }

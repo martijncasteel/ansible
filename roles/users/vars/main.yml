@@ -34,4 +34,5 @@ users:
     groups: sudo, www-data
     append: yes
 
+    authorized_keys: https://github.com/ambernorder.keys
     email: me@ambernorder.nl

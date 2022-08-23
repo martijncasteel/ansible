@@ -3,10 +3,10 @@
 
   roles:
     - role: users
-      tags: init, users, ssh, keys
+      tags: users, user, init, ssh, keys
 
     - role: common
-      tags: apt, ufw
+      tags: common, apt, ufw
 
     - role: mail
       tags: mail, postfix

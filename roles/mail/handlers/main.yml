@@ -4,3 +4,17 @@
   become: yes
   
   shell: postfix reload
+
+- name: restart postfix
+  become: yes
+  
+  service:
+    name: postfix 
+    state: restarted
+
+- name: restart opendkim
+  become: yes
+  
+  service:
+    name: opendkim 
+    state: restarted

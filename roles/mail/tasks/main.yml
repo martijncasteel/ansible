@@ -42,11 +42,11 @@
     dest: '{{ item.dest }}'
 
   with_items:
-    - src: main.cf
+    - src: postfix/main.cf
       dest: /etc/postfix/main.cf
-    - src: virtual
+    - src: postfix/virtual
       dest: /etc/postfix/virtual
-    - src: whitelist
+    - src: postfix/whitelist
       dest: /etc/postfix/whitelist
 
   notify: postfix reload
@@ -60,18 +60,6 @@
     - /etc/postfix/whitelist
   notify: postfix reload
 
--
-  become: yes
-
-  ansible.builtin.blockinfile:
-    path: /etc/postfix/master.cf
-    insertafter: EOF
-    block: | 
-      policyd-spf  unix  -       n       n       -       0       spawn
-        user=policyd-spf argv=/usr/bin/policyd-spf
-
-  notify: postfix reload
-
 - name: community.general.ufw
   become: yes
 
@@ -80,3 +68,6 @@
     name: Postfix
 
   notify: postfix reload
+
+# seperate task for adding dkim
+- include_tasks: spf_dkim.yml
