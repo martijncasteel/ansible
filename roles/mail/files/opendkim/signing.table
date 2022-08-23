@@ -1,0 +1,11 @@
+*@martijncasteel.nl     default._domainkey.martijncasteel.nl
+*@*.martijncasteel.nl   default._domainkey.martijncasteel.nl
+
+*@martijncasteel.com    default._domainkey.martijncasteel.nl
+*@*.martijncasteel.com  default._domainkey.martijncasteel.nl
+
+*@ambernorder.nl        default._domainkey.martijncasteel.nl
+*@*.ambernorder.nl      default._domainkey.martijncasteel.nl
+
+*@ateliermarcelle.nl    default._domainkey.martijncasteel.nl
+*@*.ateliermarcelle.nl  default._domainkey.martijncasteel.nl

@@ -1,0 +1,29 @@
+---
+
+- name: ansible.builtin.git
+  ansible.builtin.git:
+    repo: git@github.com:ambernorder/atelier-marcelle.git
+    dest: /var/www/ateliermarcelle.nl
+
+    version: feature/under-construction
+
+- 
+  ansible.builtin.lineinfile:
+    path: /home/martijn/.gitconfig
+    regexp: '/var/www/ateliermarcelle.nl$'
+    insertafter: '^[safe]'
+    line: "  directory = /var/www/ateliermarcelle.nl"
+
+- name: ansible.builtin.set_fact
+  ansible.builtin.set_fact:
+    config:
+      domains: 
+        - ateliermarcelle.nl 
+        - www.ateliermarcelle.nl
+        
+      root: /var/www/ateliermarcelle.nl
+
+      ssl:
+        email: info@ambernorder.nl
+
+- include_tasks: ../tasks/host.yml

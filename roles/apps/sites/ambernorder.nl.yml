@@ -1,0 +1,25 @@
+---
+
+- name: ansible.builtin.git
+  ansible.builtin.git:
+    repo: git@github.com:martijncasteel/amber-norder.git
+    dest: /var/www/ambernorder.nl
+
+- 
+  ansible.builtin.shell: # TODO changed value?
+    chdir: /var/www/ambernorder.nl
+    cmd: npm install && npm run build
+
+- name: ansible.builtin.set_fact
+  ansible.builtin.set_fact:
+    config:
+      domains: 
+        - ambernorder.nl 
+        - www.ambernorder.nl
+      
+      root: /var/www/ambernorder.nl/app
+
+      ssl:
+        email: info@ambernorder.nl
+
+- include_tasks: ../tasks/host.yml

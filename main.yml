@@ -2,6 +2,15 @@
 - hosts: all
 
   roles:
-    - users
-    - common
-    - apps
+    - role: users
+      tags: users, user, init, ssh, keys
+
+    - role: common
+      tags: common, apt, ufw
+
+    - role: mail
+      tags: mail, postfix
+
+    # *certbot* is an additional role for certbot specific
+    - role: apps
+      tags: app, apps

@@ -2,4 +2,16 @@
 # some common commands used after a clean install
 
 - include_tasks: apt.yml
-- include_tasks: locale.yml
+
+- name: community.general.ufw
+  become: yes
+
+  community.general.ufw:
+    rule: allow
+    name: OpenSSH
+
+- name: community.general.ufw
+  become: yes
+  
+  community.general.ufw:
+    state: enabled

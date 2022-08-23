@@ -1,0 +1,73 @@
+---
+
+- name: ansible.builtin.apt install
+  become: yes
+  
+  ansible.builtin.apt:
+    pkg: 
+      - postfix
+      - mailutils
+      - postfix-policyd-spf-python
+      
+  notify: postfix reload
+
+- 
+  become: yes
+
+  ansible.builtin.copy:
+    dest: /etc/mailname
+    content: mail.martijncasteel.nl
+
+  notify: postfix reload
+
+- 
+  become: yes
+
+  ansible.builtin.copy:
+    src: aliases
+    dest: /etc/aliases
+
+  notify: postfix reload
+
+- 
+  become: yes
+  ansible.builtin.shell: newaliases
+  notify: postfix reload
+
+- 
+  become: yes
+
+  ansible.builtin.copy:
+    src: '{{ item.src }}'
+    dest: '{{ item.dest }}'
+
+  with_items:
+    - src: postfix/main.cf
+      dest: /etc/postfix/main.cf
+    - src: postfix/virtual
+      dest: /etc/postfix/virtual
+    - src: postfix/whitelist
+      dest: /etc/postfix/whitelist
+
+  notify: postfix reload
+
+- 
+  become: yes
+
+  ansible.builtin.shell: postmap {{ item }}
+  with_items:
+    - /etc/postfix/virtual
+    - /etc/postfix/whitelist
+  notify: postfix reload
+
+- name: community.general.ufw
+  become: yes
+
+  community.general.ufw:
+    rule: allow
+    name: Postfix
+
+  notify: postfix reload
+
+# seperate task for adding dkim
+- include_tasks: spf_dkim.yml

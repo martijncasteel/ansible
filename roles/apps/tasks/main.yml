@@ -1,9 +1,64 @@
 ---
 
-- name: ansible.builtin.git 
-  ansible.builtin.git:
-    repo: '{{ item.repo }}'
-    dest: '{{ item.dest }}'
-    accept_hostkey: yes
+- 
+  become: yes
 
-  with_items: '{{ repositories | default([]) }}'
+  ansible.builtin.file:
+    path: /var/www
+    state: directory
+
+    group: www-data
+    mode: 02774
+
+- name: community.general.ufw
+  become: yes
+
+  community.general.ufw:
+    rule: allow
+    name: Nginx Full
+
+- name: ansible.builtin.file remove default
+  become: yes
+
+  ansible.builtin.file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+  notify: restart nginx
+
+- 
+  become: yes
+  ansible.builtin.shell:
+    chdir: /etc/nginx
+    cmd: openssl dhparam -out dhparam.pem 4096
+    creates: /etc/nginx/dhparam.pem
+
+- name: ansible.builtin.copy /etc/nginx/nginx.conf
+  become: yes 
+  
+  ansible.builtin.copy: 
+    src: nginx.conf
+    dest: /etc/nginx/nginx.conf
+  notify: restart nginx
+
+-  
+  become: yes
+
+  ansible.builtin.file:
+    path: /etc/letsencrypt/config
+    state: directory
+
+    group: www-data
+    mode: 02774
+
+- 
+  become: yes
+  ansible.builtin.cron:
+    name: certbot renew --quiet
+    job: certbot renew --quiet
+    
+    weekday: 1
+    hour: 2
+
+- include_tasks: ../sites/martijncasteel.nl.yml
+- include_tasks: ../sites/ambernorder.nl.yml
+- include_tasks: ../sites/ateliermarcelle.nl.yml

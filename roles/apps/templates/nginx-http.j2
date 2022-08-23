@@ -1,0 +1,17 @@
+server {
+  listen 80;
+  listen [::]:80;
+
+  server_name {{ config.domains | join(' ') }};
+  root {{ config.root }};
+
+  location ^~ /.well-known/acme-challenge/ {
+    default_type "text/plain";
+    try_files $uri =404;
+    break;
+  }
+
+  location / {
+    try_files $uri $uri/ =404;
+  }
+}

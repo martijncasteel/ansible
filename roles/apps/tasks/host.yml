@@ -1,0 +1,61 @@
+---
+
+- name: ansible.builtin.template
+  become: yes
+
+  ansible.builtin.template:
+    src: nginx-http.j2
+    dest: /etc/nginx/sites-available/{{ config.domains | first }}
+
+    owner: root
+    group: root
+    mode: '0644'
+  when: config.ssl is defined
+  notify: reload nginx
+
+
+- name: ansible.builtin.template 
+  become: yes
+
+  ansible.builtin.template:
+    src: certbot.j2
+    dest: /etc/letsencrypt/config/{{ config.domains | first }}
+  when: config.ssl is defined
+
+-
+  become: yes
+  ansible.builtin.shell: nginx -s reload
+
+- name: ansible.builtin.shell certbot certonly --config /etc/letsencrypt/config/{{ config.domains | first }}
+  become: yes
+
+  ansible.builtin.shell: 
+    cmd: certbot certonly --config /etc/letsencrypt/config/{{ config.domains | first }} --non-interactive --agree-tos
+    creates: /etc/letsencrypt/live/{{ config.domains | first }}/fullchain.pem
+
+  when: config.ssl is defined
+  tags: certbot
+
+- name: ansible.builtin.template
+  become: yes
+
+  ansible.builtin.template:
+    src: nginx-https.j2
+    dest: /etc/nginx/sites-available/{{ config.domains | first }}
+
+    owner: root
+    group: root
+    mode: '0644'
+  notify: reload nginx
+  when: config.ssl is defined
+  tags: certbot
+  
+- name: ansible.builtin.file
+  become: yes
+
+  ansible.builtin.file:
+    dest: /etc/nginx/sites-enabled/{{ config.domains | first }}
+    src: ../sites-available/{{ config.domains | first }}
+
+    state: link
+  notify: reload nginx

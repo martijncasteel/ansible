@@ -25,21 +25,61 @@
   become: yes
   
   ansible.builtin.apt:
-    name: '{{ packages | default([]) }}'
-    state: present
+    pkg: 
+      - git
+      - unattended-upgrades
+      - nginx
+
+# - name: TODO ansible.builtin.lineinfile /etc/apt/apt.conf.d/50unattended-upgrades
+#   become: yes # -updates https://www.digitalocean.com/community/tutorials/how-to-keep-ubuntu-20-04-servers-updated#step-2-configuring-unattended-upgrades
 
 - name: check /var/run/reboot-required
   register: reboot_required
   stat: path=/var/run/reboot-required get_md5=no
 
 - name: notify reboot if required
-  debug: msg="notify reboot if required"
+  debug: msg="reboot is required"
   notify: reboot
   when: reboot_required.stat.exists
-
 
 - name: ansible.builtin.apt autoremove
   become: yes
 
   ansible.builtin.apt:
     autoremove: yes
+
+## SNAP
+# TODO fix changed/ok
+- name: ansible.builtin.shell snap refresh
+  become: yes
+
+  ansible.builtin.shell: snap install core; snap refresh core
+
+- name: ansible.builtin.shell snap install certbot --classic
+  become: yes 
+
+  ansible.builtin.shell: snap install certbot --classic
+
+- name: ansible.builtin.file
+  become: yes
+
+  ansible.builtin.file:
+    dest: /usr/bin/certbot
+    src: /snap/bin/certbot 
+
+    state: link
+
+## NODEJS
+
+# https://www.digitalocean.com/community/tutorials/how-to-install-node-js-on-ubuntu-20-04
+- name: ansible.builtin.shell add nodejs 
+  become: yes
+
+  ansible.builtin.shell: curl -sL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+
+- 
+  become: yes
+
+  ansible.builtin.apt:
+    name: nodejs
+    state: present
