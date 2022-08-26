@@ -27,6 +27,7 @@
 -
   become: yes
   ansible.builtin.shell: nginx -s reload
+  changed_when: false
 
 - name: ansible.builtin.shell certbot certonly --config /etc/letsencrypt/config/mail.martijncasteel.nl
   become: yes

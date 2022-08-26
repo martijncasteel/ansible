@@ -2,6 +2,7 @@
 # some common commands used after a clean install
 
 - include_tasks: apt.yml
+- include_tasks: unattended-upgrades.yml
 
 - 
   become: yes

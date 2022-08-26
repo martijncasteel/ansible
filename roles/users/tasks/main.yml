@@ -134,11 +134,15 @@
   with_items: '{{ users }}'
   when: item.key.public is defined
 
-- name: accept hostkey git@github.com # TODO always changed..
+- name: accept hostkey git@github.com # NOTE always changed..
   ansible.builtin.git:
     repo: git@github.com:martijncasteel/marked-paper.git
     clone: no
     accept_hostkey: yes
+  register: output
+
+- debug: 
+    msg: "{{ output }}" # TODO 
 
 - 
   ansible.builtin.copy:

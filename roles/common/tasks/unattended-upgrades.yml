@@ -1,0 +1,16 @@
+---
+# unattended-upgrades https://www.digitalocean.com/community/tutorials/how-to-keep-ubuntu-20-04-servers-updated#step-2-configuring-unattended-upgrades
+
+- name: ansible.builtin.apt install
+  become: yes
+  
+  ansible.builtin.apt:
+    pkg: 
+      - unattended-upgrades
+
+- 
+  become: yes
+
+  ansible.builtin.copy:
+    src: 50unattended-upgrades
+    dest: /etc/apt/apt.conf.d/50unattended-upgrades

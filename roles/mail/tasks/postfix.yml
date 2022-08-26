@@ -1,6 +1,6 @@
 --- 
 
-- 
+- name: ansible.builtin.copy /etc/mailname
   become: yes
 
   ansible.builtin.copy:
@@ -21,29 +21,50 @@
       dest: /etc/postfix/main.cf
     - src: postfix/master.cf
       dest: /etc/postfix/master.cf
-
-    - src: postfix/aliases
-      dest: /etc/aliases
-    - src: postfix/virtual
-      dest: /etc/postfix/virtual
-    - src: postfix/whitelist
-      dest: /etc/postfix/whitelist
-
   notify: postfix reload
+
+- name: ansible.builtin.copy /etc/aliases
+  become: yes
+
+  ansible.builtin.copy:
+    src: postfix/aliases
+    dest: /etc/aliases
+  register: output
 
 - 
   become: yes
   ansible.builtin.shell: newaliases
+  when: output.changed
   notify: postfix reload
+
+- name: ansible.builtin.copy /etc/postfix/virtual
+  become: yes
+
+  ansible.builtin.copy:
+    src: postfix/virtual
+    dest: /etc/postfix/virtual
+  register: output
 
 - 
   become: yes
-
-  ansible.builtin.shell: postmap {{ item }}
-  with_items:
-    - /etc/postfix/virtual
-    - /etc/postfix/whitelist
+  ansible.builtin.shell: postmap /etc/postfix/virtual
+  when: output.changed
   notify: postfix reload
+
+- name: ansible.builtin.copy /etc/postfix/whitelist
+  become: yes
+
+  ansible.builtin.copy:
+    src: postfix/whitelist
+    dest: /etc/postfix/whitelist
+  register: output
+
+- 
+  become: yes
+  ansible.builtin.shell: postmap /etc/postfix/whitelist
+  when: output.changed
+  notify: postfix reload
+
 
 - name: community.general.ufw
   become: yes

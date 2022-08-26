@@ -5,8 +5,8 @@
     repo: git@github.com:martijncasteel/amber-norder.git
     dest: /var/www/ambernorder.nl
 
-- 
-  ansible.builtin.shell: # TODO changed value?
+- name: ansible.builtin.shell npm install && npm run build # TODO check if install and build is needed?
+  ansible.builtin.shell:
     chdir: /var/www/ambernorder.nl
     cmd: npm install && npm run build
 

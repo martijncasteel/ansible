@@ -1,5 +1,13 @@
 ---
 
+# check if certificate present, otherwise revert to nginx config without certificate
+- 
+  become: yes
+
+  stat:
+    path: /etc/letsencrypt/live/{{ config.domains | first }}/fullchain.pem
+  register: fullchain_file
+
 - name: ansible.builtin.template
   become: yes
 
@@ -10,9 +18,18 @@
     owner: root
     group: root
     mode: '0644'
-  when: config.ssl is defined
+  when: config.ssl is not defined or fullchain_file.stat.exists == false
   notify: reload nginx
 
+- name: ansible.builtin.file
+  become: yes
+
+  ansible.builtin.file:
+    dest: /etc/nginx/sites-enabled/{{ config.domains | first }}
+    src: ../sites-available/{{ config.domains | first }}
+
+    state: link
+  notify: reload nginx
 
 - name: ansible.builtin.template 
   become: yes
@@ -25,6 +42,8 @@
 -
   become: yes
   ansible.builtin.shell: nginx -s reload
+  when: config.ssl is defined and fullchain_file.stat.exists == false
+  changed_when: false
 
 - name: ansible.builtin.shell certbot certonly --config /etc/letsencrypt/config/{{ config.domains | first }}
   become: yes
@@ -49,13 +68,3 @@
   notify: reload nginx
   when: config.ssl is defined
   tags: certbot
-  
-- name: ansible.builtin.file
-  become: yes
-
-  ansible.builtin.file:
-    dest: /etc/nginx/sites-enabled/{{ config.domains | first }}
-    src: ../sites-available/{{ config.domains | first }}
-
-    state: link
-  notify: reload nginx

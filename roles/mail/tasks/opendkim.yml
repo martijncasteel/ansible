@@ -107,6 +107,7 @@
   ansible.builtin.shell:
     cmd: cat /etc/opendkim/keys/martijncasteel.nl/default.txt
   register: public_key
+  changed_when: false
 
 - name: opendkim public key
   debug:
