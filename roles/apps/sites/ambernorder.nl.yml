@@ -4,11 +4,13 @@
   ansible.builtin.git:
     repo: git@github.com:martijncasteel/amber-norder.git
     dest: /var/www/ambernorder.nl
+  register: output
 
-- name: ansible.builtin.shell npm install && npm run build # TODO check if install and build is needed?
+- name: ansible.builtin.shell npm install && npm run build
   ansible.builtin.shell:
     chdir: /var/www/ambernorder.nl
     cmd: npm install && npm run build
+  when: output.changed
 
 - name: ansible.builtin.set_fact
   ansible.builtin.set_fact:
