@@ -1,0 +1,38 @@
+--- 
+
+- 
+  become: yes
+
+  ansible.builtin.copy:
+    src: certificate/mail.martijncasteel.nl
+    dest: /etc/nginx/sites-available/mail.martijncasteel.nl
+
+- 
+  become: yes
+
+  ansible.builtin.file:
+    dest: /etc/nginx/sites-enabled/mail.martijncasteel.nl
+    src: ../sites-available/mail.martijncasteel.nl
+
+    state: link
+  notify: reload nginx
+
+- name: ansible.builtin.template 
+  become: yes
+
+  ansible.builtin.copy:
+    src: certificate/certbot
+    dest: /etc/letsencrypt/config/mail.martijncasteel.nl
+
+-
+  become: yes
+  ansible.builtin.shell: nginx -s reload
+
+- name: ansible.builtin.shell certbot certonly --config /etc/letsencrypt/config/mail.martijncasteel.nl
+  become: yes
+
+  ansible.builtin.shell: 
+    cmd: certbot certonly --config /etc/letsencrypt/config/mail.martijncasteel.nl --non-interactive --agree-tos
+    creates: /etc/letsencrypt/live/mail.martijncasteel.nl/fullchain.pem
+
+  tags: certbot

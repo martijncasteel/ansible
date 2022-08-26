@@ -1,0 +1,64 @@
+---
+
+-
+  become: yes 
+
+  ansible.builtin.lineinfile:
+    path: /etc/dovecot/dovecot.conf
+    insertafter: '^# Enable installed protocols'
+
+    regexp: '^#? protocols ='
+    line: 'protocols = imap lmtp'
+
+-
+  become: yes
+
+  ansible.builtin.user:
+    name: dovecot
+    groups: mail
+    append: yes
+
+-
+  become: yes 
+
+  ansible.builtin.lineinfile:
+    path: /etc/ssl/openssl.cnf
+
+    regexp: '^#?providers = provider_sect'
+    line: '#providers = provider_sect'
+
+- 
+  become: yes
+
+  ansible.builtin.copy:
+    src: '{{ item.src }}'
+    dest: '{{ item.dest }}'
+
+  with_items:
+    - src: dovecot/10-master.conf
+      dest: /etc/dovecot/conf.d/10-master.conf
+    - src: dovecot/10-mail.conf
+      dest: /etc/dovecot/conf.d/10-mail.conf
+    - src: dovecot/10-auth.conf
+      dest: /etc/dovecot/conf.d/10-auth.conf
+    - src: dovecot/10-ssl.conf
+      dest: /etc/dovecot/conf.d/10-ssl.conf
+    - src: dovecot/15-mailboxes.conf
+      dest: /etc/dovecot/conf.d/15-mailboxes.conf
+
+  notify:
+    - restart dovecot
+    - restart postfix
+
+- 
+  become: yes
+
+  community.general.ufw:
+    rule: allow
+    name: '{{ item }}'
+  loop: 
+    - Dovecot Secure IMAP
+    - Postfix Submission  
+  notify:
+    - restart dovecot
+    - restart postfix

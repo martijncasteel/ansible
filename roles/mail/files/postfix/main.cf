@@ -22,14 +22,23 @@ readme_directory = no
 # fresh installs.
 compatibility_level = 3.6
 
-# TLS parameters
-smtpd_tls_cert_file=/etc/ssl/certs/ssl-cert-snakeoil.pem
-smtpd_tls_key_file=/etc/ssl/private/ssl-cert-snakeoil.key
-smtpd_tls_security_level=may
+# Enable TLS Encryption when Postfix receives incoming emails
+smtpd_tls_cert_file=/etc/letsencrypt/live/mail.martijncasteel.nl/fullchain.pem
+smtpd_tls_key_file=/etc/letsencrypt/live/mail.martijncasteel.nl/privkey.pem
+smtpd_tls_security_level=may 
+smtpd_tls_loglevel = 1
+smtpd_tls_session_cache_database = btree:${data_directory}/smtpd_scache
 
-smtp_tls_CApath=/etc/ssl/certs
-smtp_tls_security_level=may
+# Enable TLS Encryption when Postfix sends outgoing emails
+smtp_tls_security_level = may
+smtp_tls_loglevel = 1
 smtp_tls_session_cache_database = btree:${data_directory}/smtp_scache
+
+# Enforce TLSv1.3 or TLSv1.2
+smtpd_tls_mandatory_protocols = !SSLv2, !SSLv3, !TLSv1, !TLSv1.1
+smtpd_tls_protocols = !SSLv2, !SSLv3, !TLSv1, !TLSv1.1
+smtp_tls_mandatory_protocols = !SSLv2, !SSLv3, !TLSv1, !TLSv1.1
+smtp_tls_protocols = !SSLv2, !SSLv3, !TLSv1, !TLSv1.1
 
 myhostname = mail.martijncasteel.nl
 
@@ -52,12 +61,14 @@ home_mailbox = mail/
 mailbox_size_limit = 10240000
 recipient_delimiter = +
 
+mailbox_transport = lmtp:unix:private/dovecot-lmtp
+smtputf8_enable = no
+
 mydestination = martijncasteel.nl localhost.localdomain localhost
 virtual_alias_domains = ambernorder.nl ateliermarcelle.nl martijncasteel.com
 virtual_alias_maps = hash:/etc/postfix/virtual
 
 # https://www.howtoforge.com/block_spam_at_mta_level_postfix
-smtpd_helo_required = yes
 disable_vrfy_command = yes
 strict_rfc821_envelopes = yes
 invalid_hostname_reject_code = 554
@@ -104,6 +115,7 @@ smtpd_recipient_restrictions =
   reject_rbl_client bl.spamcop.net, 
   reject_rhsbl_sender dsn.rfc-ignorant.org
  
+smtpd_helo_required = yes
 smtpd_helo_restrictions = 
   permit_mynetworks, 
   permit_sasl_authenticated, 

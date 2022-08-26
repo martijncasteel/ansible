@@ -3,17 +3,6 @@
 # https://www.linuxbabe.com/mail-server/setting-up-dkim-and-spf
 # https://serverfault.com/questions/785151/dkim-with-same-key-but-different-domains#:~:text=You%20can%20use%20the%20same,be%20published%20under%20different%20domains.
 
--
-  become: yes
-
-  ansible.builtin.blockinfile:
-    path: /etc/postfix/master.cf
-    insertafter: EOF
-    block: | 
-      policyd-spf  unix  -       n       n       -       0       spawn
-        user=policyd-spf argv=/usr/bin/policyd-spf
-
-  notify: postfix reload
 
 # install and setup config files for dkim
 - name: ansible.builtin.apt install
