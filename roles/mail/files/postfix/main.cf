@@ -64,6 +64,7 @@ recipient_delimiter = +
 mailbox_transport = lmtp:unix:private/dovecot-lmtp
 smtputf8_enable = no
 
+# TODO perhaps domain to mail.martijncasteel.nl, so that i can add myself as virtual?
 mydestination = martijncasteel.nl localhost.localdomain localhost
 virtual_alias_domains = ambernorder.nl ateliermarcelle.nl martijncasteel.com
 virtual_alias_maps = hash:/etc/postfix/virtual

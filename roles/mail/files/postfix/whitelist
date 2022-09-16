@@ -1,5 +1,4 @@
 # run postmap /etc/postfix/whitelist after editing
-# pale-pumpkin OK
 ru REJECT
 eu REJECT
 xyz REJECT
@@ -8,4 +7,6 @@ world REJECT
 cloud REJECT
 rocks REJECT
 stream REJECT
+
 dataplugs.com REJECT
+atlasaxillia.com REJECT
